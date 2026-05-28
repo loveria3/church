@@ -1261,28 +1261,21 @@
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pdfW = 210;
-      const pdfH = (canvas2.height / canvas2.width) * pdfW;
-      if (pdfH <= 297) {
-        const imgData = canvas2.toDataURL('image/jpeg', 0.92);
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
-      } else {
-        const a4HeightPx = Math.round(canvas2.width * (297 / 210));
-        const totalPages = Math.ceil(canvas2.height / a4HeightPx);
-        for (let page = 0; page < totalPages; page++) {
-          if (page > 0) pdf.addPage();
-          const srcY = page * a4HeightPx;
-          const srcH = Math.min(a4HeightPx, canvas2.height - srcY);
-          const tmpCanvas = document.createElement('canvas');
-          tmpCanvas.width = canvas2.width;
-          tmpCanvas.height = srcH;
-          const tmpCtx = tmpCanvas.getContext('2d');
-          tmpCtx.fillStyle = '#ffffff';
-          tmpCtx.fillRect(0, 0, tmpCanvas.width, tmpCanvas.height);
-          tmpCtx.drawImage(canvas2, 0, srcY, canvas2.width, srcH, 0, 0, canvas2.width, srcH);
-          const sliceData = tmpCanvas.toDataURL('image/jpeg', 0.92);
-          const sliceHMm = (srcH / canvas2.width) * 210;
-          pdf.addImage(sliceData, 'JPEG', 0, 0, 210, sliceHMm);
-        }
+      const a4HeightPx = Math.round(canvas2.width * (297 / 210));
+      const totalPages = Math.ceil(canvas2.height / a4HeightPx);
+      for (let page = 0; page < totalPages; page++) {
+        if (page > 0) pdf.addPage();
+        const srcY = page * a4HeightPx;
+        const srcH = Math.min(a4HeightPx, canvas2.height - srcY);
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = canvas2.width;
+        tmpCanvas.height = a4HeightPx; // 항상 A4 높이로 캔버스 생성 (빈 공간은 흰색)
+        const tmpCtx = tmpCanvas.getContext('2d');
+        tmpCtx.fillStyle = '#ffffff';
+        tmpCtx.fillRect(0, 0, tmpCanvas.width, tmpCanvas.height);
+        tmpCtx.drawImage(canvas2, 0, srcY, canvas2.width, srcH, 0, 0, canvas2.width, srcH);
+        const sliceData = tmpCanvas.toDataURL('image/jpeg', 0.92);
+        pdf.addImage(sliceData, 'JPEG', 0, 0, 210, 297);
       }
       const studentName = document.getElementById('studentName').value.trim();
       pdf.save(`우도순례_동의서_${studentName}.pdf`);
