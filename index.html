@@ -383,12 +383,21 @@ function makeHarborIcon() {
 }
 
 function initMap() {
+  // 지도 컨테이너 높이 명시적으로 설정
+  const mapEl = document.getElementById('map');
+  const mapWrap = mapEl.parentElement;
+  mapEl.style.height = mapWrap.offsetHeight + 'px';
+
   map = L.map('map', { zoomControl:true, attributionControl:false, tap:false })
          .setView([33.503, 126.955], 13);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom:19, attribution:'&copy; OpenStreetMap'
+  // OpenStreetMap 타일 (기본) + 카르토 타일 (대안)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    maxZoom:19, attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd'
   }).addTo(map);
+
+  // 지도 크기 재계산
+  setTimeout(() => { if(map) map.invalidateSize(); }, 300);
   L.control.attribution({ position:'bottomright', prefix:false }).addTo(map);
 
   // 출발점: 하우목동항
