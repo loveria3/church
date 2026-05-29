@@ -4,429 +4,138 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>🌊 우도 탐험대!</title>
-
-<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<!-- html2canvas -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { font-family: 'Noto Sans KR', -apple-system, sans-serif; background:#e8f4fd; min-height:100vh; overflow-x:hidden; }
 
-body {
-  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #e8f4fd;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* ────────── 시작 화면 ────────── */
+/* 시작 화면 */
 #startScreen {
-  position: fixed; inset: 0; z-index: 999;
-  background: linear-gradient(160deg, #0d47a1 0%, #1976d2 45%, #42a5f5 100%);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 24px 20px;
+  position:fixed; inset:0; z-index:999;
+  background:linear-gradient(160deg,#0d47a1 0%,#1976d2 45%,#42a5f5 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px 20px;
 }
-
 .start-card {
-  background: white; border-radius: 32px;
-  padding: 36px 28px; width: 100%; max-width: 380px;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  background:white; border-radius:32px; padding:36px 28px;
+  width:100%; max-width:380px; text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
 }
+.start-emoji { font-size:76px; display:block; margin-bottom:12px; animation:float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.start-title { font-size:30px; font-weight:900; color:#0d47a1; margin-bottom:4px; }
+.start-sub   { font-size:14px; color:#90a4ae; margin-bottom:22px; font-weight:600; }
+.info-box    { background:#e3f2fd; border-radius:16px; padding:14px 16px; margin-bottom:22px; font-size:14px; color:#1565c0; line-height:1.9; font-weight:600; text-align:left; }
+.name-label  { font-size:14px; font-weight:800; color:#555; margin-bottom:8px; text-align:left; }
+.name-input  { width:100%; padding:14px 18px; border:2.5px solid #90caf9; border-radius:14px; font-size:18px; outline:none; transition:border .2s; margin-bottom:16px; font-family:inherit; }
+.name-input:focus { border-color:#1976d2; }
+.start-btn   { width:100%; padding:16px; background:linear-gradient(135deg,#1976d2,#42a5f5); color:white; border:none; border-radius:16px; font-size:19px; font-weight:900; cursor:pointer; box-shadow:0 6px 20px rgba(25,118,210,.4); font-family:inherit; }
+.start-btn:active { transform:scale(.97); }
+.start-footer { margin-top:16px; font-size:12px; color:#bbb; }
 
-.start-emoji { font-size: 76px; display: block; margin-bottom: 12px;
-  animation: float 3s ease-in-out infinite; }
-@keyframes float {
-  0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)}
-}
-
-.start-title { font-size: 30px; font-weight: 900; color: #0d47a1; margin-bottom: 4px; }
-.start-sub   { font-size: 14px; color: #90a4ae; margin-bottom: 24px; font-weight: 600; }
-
-.info-box {
-  background: #e3f2fd; border-radius: 16px;
-  padding: 14px 16px; margin-bottom: 22px;
-  font-size: 14px; color: #1565c0; line-height: 1.8;
-  font-weight: 600; text-align: left;
-}
-
-.name-label { font-size: 14px; font-weight: 800; color: #555; margin-bottom: 8px; text-align: left; }
-
-.name-input {
-  width: 100%; padding: 14px 18px;
-  border: 2.5px solid #90caf9; border-radius: 14px;
-  font-size: 18px; outline: none;
-  transition: border .2s; margin-bottom: 16px;
-  font-family: inherit;
-}
-.name-input:focus { border-color: #1976d2; }
-
-.start-btn {
-  width: 100%; padding: 16px;
-  background: linear-gradient(135deg, #1976d2, #42a5f5);
-  color: white; border: none; border-radius: 16px;
-  font-size: 19px; font-weight: 900; cursor: pointer;
-  box-shadow: 0 6px 20px rgba(25,118,210,.4);
-  font-family: inherit;
-}
-.start-btn:active { transform: scale(.97); }
-
-.start-footer { margin-top: 18px; font-size: 12px; color: #bbb; }
-
-/* ────────── 메인 앱 ────────── */
-#mainApp { display: none; height: 100vh; flex-direction: column; }
+/* 메인 앱 */
+#mainApp { display:none; height:100vh; flex-direction:column; }
 
 /* 헤더 */
-.header {
-  background: linear-gradient(135deg, #0d47a1, #1976d2);
-  padding: 12px 16px 8px;
-  flex-shrink: 0;
-  box-shadow: 0 3px 12px rgba(0,0,0,.25);
-  z-index: 100;
-}
-
-.header-row1 {
-  display: flex; justify-content: space-between;
-  align-items: center; margin-bottom: 8px;
-}
-.header-title { font-size: 18px; font-weight: 900; color: white; }
-.header-name  { font-size: 13px; color: rgba(255,255,255,.8); font-weight: 700; }
+.header { background:linear-gradient(135deg,#0d47a1,#1976d2); padding:12px 16px 8px; flex-shrink:0; box-shadow:0 3px 12px rgba(0,0,0,.25); z-index:100; }
+.header-row1 { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.header-title { font-size:18px; font-weight:900; color:white; }
+.header-name  { font-size:13px; color:rgba(255,255,255,.8); font-weight:700; }
 
 /* 스탬프 바 */
-.stamps-bar {
-  background: rgba(255,255,255,.15);
-  border-radius: 14px; padding: 8px 14px;
-  display: flex; align-items: center; gap: 10px;
-}
-.stamp-label { font-size: 12px; color: rgba(255,255,255,.85); font-weight: 700; flex-shrink: 0; }
-.stamps-list { display: flex; gap: 14px; flex: 1; }
-.stamp-item {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-}
-.stamp-circle {
-  width: 38px; height: 38px; border-radius: 50%;
-  background: rgba(255,255,255,.2);
-  border: 2px solid rgba(255,255,255,.3);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; filter: grayscale(1); opacity: .45;
-  transition: all .5s;
-}
-.stamp-circle.earned {
-  background: linear-gradient(135deg, #ffd700, #ffb300);
-  border-color: #ffd700;
-  filter: none; opacity: 1;
-  animation: stampPop .5s ease;
-  box-shadow: 0 3px 12px rgba(255,193,7,.5);
-}
-@keyframes stampPop {
-  0%{transform:scale(0) rotate(-20deg)} 70%{transform:scale(1.3) rotate(5deg)} 100%{transform:scale(1)}
-}
-.stamp-name { font-size: 9px; color: rgba(255,255,255,.7); font-weight: 700; }
-.stamp-count { margin-left: auto; font-size: 16px; font-weight: 900; color: #ffd700; }
+.stamps-bar  { background:rgba(255,255,255,.15); border-radius:14px; padding:8px 14px; display:flex; align-items:center; gap:10px; }
+.stamp-label { font-size:12px; color:rgba(255,255,255,.85); font-weight:700; flex-shrink:0; }
+.stamps-list { display:flex; gap:14px; flex:1; }
+.stamp-item  { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.stamp-circle { width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.2); border:2px solid rgba(255,255,255,.3); display:flex; align-items:center; justify-content:center; font-size:20px; filter:grayscale(1); opacity:.45; transition:all .5s; }
+.stamp-circle.earned { background:linear-gradient(135deg,#ffd700,#ffb300); border-color:#ffd700; filter:none; opacity:1; animation:stampPop .5s ease; box-shadow:0 3px 12px rgba(255,193,7,.5); }
+@keyframes stampPop { 0%{transform:scale(0) rotate(-20deg)} 70%{transform:scale(1.3) rotate(5deg)} 100%{transform:scale(1)} }
+.stamp-name  { font-size:9px; color:rgba(255,255,255,.7); font-weight:700; }
+.stamp-count { margin-left:auto; font-size:16px; font-weight:900; color:#ffd700; }
 
-/* 탭 */
-.tabs {
-  display: flex; background: white;
-  border-bottom: 2px solid #e0e8f5;
-  flex-shrink: 0; overflow-x: auto;
-  scrollbar-width: none;
-}
-.tabs::-webkit-scrollbar { display: none; }
-.tab {
-  flex: 1; min-width: 72px;
-  padding: 10px 6px;
-  border: none; background: none;
-  font-size: 12px; font-weight: 700;
-  color: #90a4ae; cursor: pointer;
-  white-space: nowrap;
-  border-bottom: 3px solid transparent;
-  transition: all .2s; font-family: inherit;
-}
-.tab.active { color: #1976d2; border-bottom-color: #1976d2; }
+/* 지도 */
+.map-wrap    { position:relative; flex:1; min-height:0; }
+#map         { width:100%; height:100%; z-index:1; }
 
-/* 섹션 */
-.section { display: none; flex: 1; flex-direction: column; overflow: hidden; }
-.section.active { display: flex; }
+/* GPS 오버레이 */
+.gps-overlay { position:absolute; top:10px; left:10px; right:10px; background:rgba(255,255,255,.93); border-radius:12px; padding:8px 12px; display:flex; align-items:center; gap:8px; font-size:12px; color:#555; font-weight:600; z-index:10; box-shadow:0 2px 10px rgba(0,0,0,.15); pointer-events:none; }
+.gps-dot     { width:10px; height:10px; border-radius:50%; background:#ccc; flex-shrink:0; }
+.gps-dot.on  { background:#4caf50; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(76,175,80,.4)} 50%{box-shadow:0 0 0 6px rgba(76,175,80,0)} }
 
-/* ────────── 지도 ────────── */
-.map-wrap {
-  position: relative; flex: 1; min-height: 0;
-}
+/* 하단 장소 패널 */
+.loc-panel   { background:white; padding:10px 12px; flex-shrink:0; border-top:1px solid #e8f0fe; overflow-x:auto; white-space:nowrap; scrollbar-width:none; display:flex; gap:8px; }
+.loc-panel::-webkit-scrollbar { display:none; }
+.loc-chip    { display:inline-flex; align-items:center; gap:8px; background:#f0f4ff; border-radius:14px; padding:9px 14px; cursor:pointer; border:2px solid transparent; transition:all .15s; white-space:nowrap; flex-shrink:0; }
+.loc-chip:active { transform:scale(.97); }
+.loc-chip.done   { background:#e8f5e9; border-color:#4caf50; }
+.loc-chip.nearby { background:#fff3e0; border-color:#ff7043; animation:chipPulse 2s infinite; }
+@keyframes chipPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,112,67,.3)} 50%{box-shadow:0 0 0 8px rgba(255,112,67,0)} }
+.loc-chip-icon  { font-size:22px; }
+.loc-chip-name  { font-size:13px; font-weight:800; color:#1a237e; }
+.loc-chip-desc  { font-size:11px; color:#888; margin-top:1px; }
+.loc-chip-badge { font-size:18px; margin-left:4px; }
 
-#map0, #map1, #map2, #map3 {
-  width: 100%; height: 100%;
-  z-index: 1;
-}
-
-/* GPS 상태 오버레이 */
-.gps-overlay {
-  position: absolute; top: 10px; left: 10px; right: 10px;
-  background: rgba(255,255,255,.93);
-  border-radius: 12px; padding: 8px 12px;
-  display: flex; align-items: center; gap: 8px;
-  font-size: 12px; color: #555; font-weight: 600;
-  z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,.15);
-  pointer-events: none;
-}
-.gps-dot {
-  width: 10px; height: 10px; border-radius: 50%;
-  background: #ccc; flex-shrink: 0;
-}
-.gps-dot.on { background: #4caf50; animation: pulse 2s infinite; }
-@keyframes pulse {
-  0%,100%{box-shadow:0 0 0 0 rgba(76,175,80,.4)}
-  50%{box-shadow:0 0 0 6px rgba(76,175,80,0)}
-}
-
-/* 장소 패널 (지도 아래) */
-.loc-panel {
-  background: white;
-  padding: 12px 14px;
-  flex-shrink: 0;
-  border-top: 1px solid #e8f0fe;
-  overflow-x: auto; white-space: nowrap;
-  scrollbar-width: none;
-  display: flex; gap: 10px;
-}
-.loc-panel::-webkit-scrollbar { display: none; }
-
-.loc-chip {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: #f0f4ff; border-radius: 14px;
-  padding: 10px 16px; cursor: pointer;
-  border: 2px solid transparent;
-  transition: all .15s; white-space: nowrap;
-  flex-shrink: 0;
-}
-.loc-chip:active { transform: scale(.97); }
-.loc-chip.done { background: #e8f5e9; border-color: #4caf50; }
-.loc-chip.nearby { background: #fff3e0; border-color: #ff7043;
-  animation: chipPulse 2s infinite; }
-@keyframes chipPulse {
-  0%,100%{box-shadow:0 0 0 0 rgba(255,112,67,.3)}
-  50%{box-shadow:0 0 0 8px rgba(255,112,67,0)}
-}
-.loc-chip-icon  { font-size: 22px; }
-.loc-chip-info  { display: flex; flex-direction: column; }
-.loc-chip-name  { font-size: 13px; font-weight: 800; color: #1a237e; }
-.loc-chip-desc  { font-size: 11px; color: #888; margin-top: 1px; }
-.loc-chip-badge { font-size: 18px; margin-left: 4px; }
-
-/* ────────── 미션 모달 ────────── */
-.modal-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.6); z-index: 500;
-  align-items: flex-end; justify-content: center;
-  backdrop-filter: blur(4px);
-}
-.modal-overlay.open { display: flex; animation: fadeIn .2s; }
+/* 미션 모달 */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:500; align-items:flex-end; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.open { display:flex; animation:fadeIn .2s; }
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-
-.modal {
-  background: white; border-radius: 28px 28px 0 0;
-  padding: 20px 20px 40px; width: 100%; max-width: 480px;
-  max-height: 88vh; overflow-y: auto;
-  animation: slideUp .3s ease;
-}
-@keyframes slideUp {
-  from{transform:translateY(100%)} to{transform:translateY(0)}
-}
-
-.modal-handle {
-  width: 40px; height: 4px; background: #e0e0e0;
-  border-radius: 2px; margin: 0 auto 18px;
-}
-.modal-loc-tag {
-  font-size: 12px; font-weight: 800; color: #ff7043;
-  letter-spacing: 1px; margin-bottom: 6px;
-}
-.modal-title {
-  font-size: 22px; font-weight: 900; color: #1a237e;
-  margin-bottom: 18px; line-height: 1.3;
-}
-
-.q-card {
-  background: #f0f4ff; border-radius: 16px;
-  padding: 16px; margin-bottom: 12px;
-}
-.q-num  { font-size: 11px; font-weight: 800; color: #1976d2; margin-bottom: 6px; }
-.q-text { font-size: 16px; font-weight: 700; color: #222; margin-bottom: 10px; line-height:1.4; }
-
-.ans-input {
-  width: 100%; padding: 12px 16px;
-  border: 2px solid #c5d5f5; border-radius: 12px;
-  font-size: 16px; outline: none; transition: border .2s;
-  font-family: inherit;
-}
-.ans-input:focus   { border-color: #1976d2; }
-.ans-input.correct { border-color: #4caf50; background: #f1f8f1; }
-.ans-input.wrong   { border-color: #f44336; background: #fff5f5; }
-
-.ans-fb { font-size: 13px; margin-top: 5px; font-weight: 600; min-height: 18px; }
-.ans-fb.correct { color: #4caf50; }
-.ans-fb.wrong   { color: #f44336; }
-
-.submit-btn {
-  width: 100%; padding: 15px;
-  background: linear-gradient(135deg, #1976d2, #42a5f5);
-  color: white; border: none; border-radius: 16px;
-  font-size: 17px; font-weight: 900; cursor: pointer;
-  margin-top: 6px; font-family: inherit;
-  box-shadow: 0 4px 14px rgba(25,118,210,.35);
-}
-.submit-btn:active { transform: scale(.97); }
-
-.cancel-btn {
-  width: 100%; padding: 13px; margin-top: 10px;
-  background: #f5f5f5; color: #888;
-  border: none; border-radius: 16px;
-  font-size: 15px; font-weight: 700; cursor: pointer;
-  font-family: inherit;
-}
+.modal { background:white; border-radius:28px 28px 0 0; padding:20px 20px 40px; width:100%; max-width:480px; max-height:88vh; overflow-y:auto; animation:slideUp .3s ease; }
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-handle { width:40px; height:4px; background:#e0e0e0; border-radius:2px; margin:0 auto 18px; }
+.modal-loc-tag { font-size:12px; font-weight:800; color:#ff7043; letter-spacing:1px; margin-bottom:6px; }
+.modal-title   { font-size:22px; font-weight:900; color:#1a237e; margin-bottom:18px; line-height:1.3; }
+.q-card  { background:#f0f4ff; border-radius:16px; padding:16px; margin-bottom:12px; }
+.q-num   { font-size:11px; font-weight:800; color:#1976d2; margin-bottom:6px; }
+.q-text  { font-size:16px; font-weight:700; color:#222; margin-bottom:10px; line-height:1.4; }
+.ans-input { width:100%; padding:12px 16px; border:2px solid #c5d5f5; border-radius:12px; font-size:16px; outline:none; transition:border .2s; font-family:inherit; }
+.ans-input:focus   { border-color:#1976d2; }
+.ans-input.correct { border-color:#4caf50; background:#f1f8f1; }
+.ans-input.wrong   { border-color:#f44336; background:#fff5f5; }
+.ans-fb { font-size:13px; margin-top:5px; font-weight:600; min-height:18px; }
+.ans-fb.correct { color:#4caf50; }
+.ans-fb.wrong   { color:#f44336; }
+.submit-btn { width:100%; padding:15px; background:linear-gradient(135deg,#1976d2,#42a5f5); color:white; border:none; border-radius:16px; font-size:17px; font-weight:900; cursor:pointer; margin-top:6px; font-family:inherit; box-shadow:0 4px 14px rgba(25,118,210,.35); }
+.submit-btn:active { transform:scale(.97); }
+.cancel-btn { width:100%; padding:13px; margin-top:10px; background:#f5f5f5; color:#888; border:none; border-radius:16px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; }
 
 /* 성공 화면 */
-.success-wrap { text-align: center; padding: 16px 0; }
-.success-emoji { font-size: 80px; display: block; margin-bottom: 12px;
-  animation: bounce .6s ease; }
-@keyframes bounce {
-  0%{transform:scale(0) rotate(-10deg)} 70%{transform:scale(1.2)} 100%{transform:scale(1)}
-}
-.success-title { font-size: 26px; font-weight: 900; color: #1a237e; margin-bottom: 8px; }
-.success-sub   { font-size: 15px; color: #666; margin-bottom: 18px; line-height: 1.6; }
-.success-star  { font-size: 56px; display: block; margin-bottom: 16px;
-  animation: starSpin .8s ease; }
-@keyframes starSpin {
-  0%{transform:scale(0) rotate(-180deg)} 100%{transform:scale(1) rotate(0)}
-}
-.all-done-box {
-  background: linear-gradient(135deg, #fff9c4, #fff3e0);
-  border-radius: 16px; padding: 16px; margin-bottom: 16px;
-  font-size: 15px; font-weight: 700; color: #7a5500; line-height: 1.8;
-  border: 2px solid #ffd700;
-}
-.capture-trigger-btn {
-  width: 100%; padding: 15px; margin-bottom: 10px;
-  background: linear-gradient(135deg, #ffd700, #ffb300);
-  color: #7a5500; border: none; border-radius: 16px;
-  font-size: 16px; font-weight: 900; cursor: pointer;
-  box-shadow: 0 4px 14px rgba(255,193,7,.4);
-  font-family: inherit;
-}
-.success-close {
-  width: 100%; padding: 13px;
-  background: #f5f5f5; color: #777;
-  border: none; border-radius: 16px;
-  font-size: 15px; font-weight: 700; cursor: pointer;
-  font-family: inherit;
-}
+.success-wrap  { text-align:center; padding:16px 0; }
+.success-emoji { font-size:80px; display:block; margin-bottom:12px; animation:bounce .6s ease; }
+@keyframes bounce { 0%{transform:scale(0) rotate(-10deg)} 70%{transform:scale(1.2)} 100%{transform:scale(1)} }
+.success-title { font-size:26px; font-weight:900; color:#1a237e; margin-bottom:8px; }
+.success-sub   { font-size:15px; color:#666; margin-bottom:18px; line-height:1.6; }
+.success-star  { font-size:56px; display:block; margin-bottom:16px; animation:starSpin .8s ease; }
+@keyframes starSpin { 0%{transform:scale(0) rotate(-180deg)} 100%{transform:scale(1) rotate(0)} }
+.all-done-box  { background:linear-gradient(135deg,#fff9c4,#fff3e0); border-radius:16px; padding:16px; margin-bottom:16px; font-size:15px; font-weight:700; color:#7a5500; line-height:1.8; border:2px solid #ffd700; }
+.capture-trigger-btn { width:100%; padding:15px; margin-bottom:10px; background:linear-gradient(135deg,#ffd700,#ffb300); color:#7a5500; border:none; border-radius:16px; font-size:16px; font-weight:900; cursor:pointer; box-shadow:0 4px 14px rgba(255,193,7,.4); font-family:inherit; }
+.success-close { width:100%; padding:13px; background:#f5f5f5; color:#777; border:none; border-radius:16px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; }
 
-/* ────────── 완주 캡처 카드 ────────── */
-#captureCard {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.75); z-index: 600;
-  align-items: center; justify-content: center;
-  padding: 20px; flex-direction: column; gap: 14px;
-}
-#captureCard.open { display: flex; }
-
-.capture-inner {
-  background: linear-gradient(145deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%);
-  border-radius: 28px; padding: 30px 24px 26px;
-  width: 100%; max-width: 320px; text-align: center;
-  box-shadow: 0 16px 48px rgba(0,0,0,.5);
-  position: relative; overflow: hidden;
-}
-.capture-inner::before {
-  content:''; position:absolute; inset:0;
-  background: radial-gradient(circle at 20% 15%, rgba(255,255,255,.1) 0%, transparent 55%);
-  pointer-events: none;
-}
-.cap-badge {
-  background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.3);
-  border-radius: 20px; padding: 4px 14px;
-  font-size: 11px; color: rgba(255,255,255,.9);
-  font-weight: 700; letter-spacing: 1px; display: inline-block; margin-bottom: 16px;
-}
-.cap-sub  { font-size: 12px; color: rgba(255,255,255,.65); margin-bottom: 4px; font-weight: 600; }
-.cap-name { font-size: 26px; font-weight: 900; color: white; margin-bottom: 18px;
-  text-shadow: 0 2px 8px rgba(0,0,0,.3); }
-
-.cap-stars { display: flex; justify-content: center; gap: 14px; margin-bottom: 16px; }
-.cap-star-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.cap-star-circle {
-  width: 60px; height: 60px; border-radius: 50%;
-  background: linear-gradient(135deg, #ffd700, #ffb300);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28px; box-shadow: 0 4px 14px rgba(255,193,7,.5);
-}
-.cap-star-lbl { font-size: 10px; color: rgba(255,255,255,.8); font-weight: 700; }
-
-.cap-msg {
-  background: rgba(255,255,255,.12); border-radius: 14px;
-  padding: 12px; font-size: 14px; color: white;
-  font-weight: 700; line-height: 1.6; margin-bottom: 14px;
-}
-.cap-date   { font-size: 11px; color: rgba(255,255,255,.5); margin-bottom: 4px; }
-.cap-church { font-size: 12px; color: rgba(255,255,255,.65); font-weight: 700; }
-
-.cap-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px; }
-.save-btn {
-  padding: 15px; background: linear-gradient(135deg, #ffd700, #ffb300);
-  color: #7a5500; border: none; border-radius: 16px;
-  font-size: 16px; font-weight: 900; cursor: pointer;
-  box-shadow: 0 4px 14px rgba(255,193,7,.4); font-family: inherit;
-}
-.save-btn:active { transform: scale(.97); }
-.close-cap-btn {
-  padding: 13px; background: rgba(255,255,255,.15);
-  color: white; border: 1.5px solid rgba(255,255,255,.3);
-  border-radius: 16px; font-size: 14px; font-weight: 700;
-  cursor: pointer; font-family: inherit;
-}
+/* 완주 캡처 카드 */
+#captureCard { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:600; align-items:center; justify-content:center; padding:20px; flex-direction:column; gap:14px; }
+#captureCard.open { display:flex; }
+.capture-inner { background:linear-gradient(145deg,#0d47a1 0%,#1565c0 50%,#1976d2 100%); border-radius:28px; padding:30px 24px 26px; width:100%; max-width:320px; text-align:center; box-shadow:0 16px 48px rgba(0,0,0,.5); position:relative; overflow:hidden; }
+.capture-inner::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 20% 15%,rgba(255,255,255,.1) 0%,transparent 55%); pointer-events:none; }
+.cap-badge   { background:rgba(255,255,255,.18); border:1.5px solid rgba(255,255,255,.3); border-radius:20px; padding:4px 14px; font-size:11px; color:rgba(255,255,255,.9); font-weight:700; letter-spacing:1px; display:inline-block; margin-bottom:16px; }
+.cap-sub     { font-size:12px; color:rgba(255,255,255,.65); margin-bottom:4px; font-weight:600; }
+.cap-name    { font-size:26px; font-weight:900; color:white; margin-bottom:18px; text-shadow:0 2px 8px rgba(0,0,0,.3); }
+.cap-stars   { display:flex; justify-content:center; gap:14px; margin-bottom:16px; }
+.cap-star-item  { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.cap-star-circle { width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg,#ffd700,#ffb300); display:flex; align-items:center; justify-content:center; font-size:28px; box-shadow:0 4px 14px rgba(255,193,7,.5); }
+.cap-star-lbl   { font-size:10px; color:rgba(255,255,255,.8); font-weight:700; }
+.cap-msg    { background:rgba(255,255,255,.12); border-radius:14px; padding:12px; font-size:14px; color:white; font-weight:700; line-height:1.6; margin-bottom:14px; }
+.cap-date   { font-size:11px; color:rgba(255,255,255,.5); margin-bottom:4px; }
+.cap-church { font-size:12px; color:rgba(255,255,255,.65); font-weight:700; }
+.cap-actions { display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px; }
+.save-btn    { padding:15px; background:linear-gradient(135deg,#ffd700,#ffb300); color:#7a5500; border:none; border-radius:16px; font-size:16px; font-weight:900; cursor:pointer; box-shadow:0 4px 14px rgba(255,193,7,.4); font-family:inherit; }
+.save-btn:active { transform:scale(.97); }
+.close-cap-btn { padding:13px; background:rgba(255,255,255,.15); color:white; border:1.5px solid rgba(255,255,255,.3); border-radius:16px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
 
 /* 토스트 */
-.toast {
-  position: fixed; bottom: 28px; left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: #1a237e; color: white;
-  padding: 12px 22px; border-radius: 28px;
-  font-size: 14px; font-weight: 700; z-index: 700;
-  box-shadow: 0 4px 18px rgba(0,0,0,.3);
-  transition: transform .4s cubic-bezier(.34,1.56,.64,1);
-  pointer-events: none; white-space: nowrap;
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
+.toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(100px); background:#1a237e; color:white; padding:12px 22px; border-radius:28px; font-size:14px; font-weight:700; z-index:700; box-shadow:0 4px 18px rgba(0,0,0,.3); transition:transform .4s cubic-bezier(.34,1.56,.64,1); pointer-events:none; white-space:nowrap; }
+.toast.show { transform:translateX(-50%) translateY(0); }
 
-/* Leaflet 커스텀 마커 */
-.custom-marker {
-  background: none; border: none;
-}
-.marker-pin {
-  width: 48px; height: 48px; border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg); border: 3px solid white;
-  box-shadow: 0 3px 12px rgba(0,0,0,.3);
-  display: flex; align-items: center; justify-content: center;
-}
-.marker-emoji {
-  transform: rotate(45deg); font-size: 22px;
-  display: flex; align-items: center; justify-content: center;
-  width: 100%; height: 100%;
-}
-.marker-label {
-  position: absolute; bottom: -22px; left: 50%;
-  transform: translateX(-50%);
-  background: white; border-radius: 8px;
-  padding: 2px 8px; font-size: 10px; font-weight: 800;
-  color: #1a237e; white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(0,0,0,.2);
-}
-
-@keyframes shake {
-  0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)}
-  40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)}
-}
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
 </style>
 </head>
 <body>
@@ -438,7 +147,7 @@ body {
     <div class="start-title">우도 탐험대!</div>
     <div class="start-sub">서문성당 복사학부모회</div>
     <div class="info-box">
-      🗺️ 실제 우도 지도로 길을 찾아요!<br>
+      🗺️ 우도 지도에서 장소를 확인해요!<br>
       ⭐ 미션 3개 성공하면 별스탬프 획득!<br>
       📸 완주하면 인증 사진 저장!
     </div>
@@ -451,7 +160,6 @@ body {
 
 <!-- 메인 앱 -->
 <div id="mainApp">
-  <!-- 헤더 -->
   <div class="header">
     <div class="header-row1">
       <div class="header-title">🌊 우도 탐험대</div>
@@ -477,132 +185,47 @@ body {
     </div>
   </div>
 
-  <!-- 탭 -->
-  <div class="tabs">
-    <button class="tab active" onclick="showTab(0)">🗺️ 전체</button>
-    <button class="tab" onclick="showTab(1)">⚓→⛪ 항구→성당</button>
-    <button class="tab" onclick="showTab(2)">⛪→🍜 성당→짜장맨</button>
-    <button class="tab" onclick="showTab(3)">🍜→🏖️ 짜장맨→산호사</button>
-  </div>
-
-  <!-- 탭0: 전체 지도 -->
-  <div class="section active" id="sec0">
-    <div class="map-wrap">
-      <div id="map0"></div>
-      <div class="gps-overlay">
-        <div class="gps-dot" id="gpsDot0"></div>
-        <span id="gpsText0">GPS 위치 파악 중...</span>
-      </div>
-    </div>
-    <div class="loc-panel" id="locPanel">
-      <div class="loc-chip" id="chip0" onclick="openMission(0)">
-        <div class="loc-chip-icon">⛪</div>
-        <div class="loc-chip-info">
-          <div class="loc-chip-name">우도성당</div>
-          <div class="loc-chip-desc">탭해서 미션 시작</div>
-        </div>
-        <div class="loc-chip-badge" id="chipBadge0">🔒</div>
-      </div>
-      <div class="loc-chip" id="chip1" onclick="openMission(1)">
-        <div class="loc-chip-icon">🍜</div>
-        <div class="loc-chip-info">
-          <div class="loc-chip-name">우도짜장맨</div>
-          <div class="loc-chip-desc">탭해서 미션 시작</div>
-        </div>
-        <div class="loc-chip-badge" id="chipBadge1">🔒</div>
-      </div>
-      <div class="loc-chip" id="chip2" onclick="openMission(2)">
-        <div class="loc-chip-icon">🏖️</div>
-        <div class="loc-chip-info">
-          <div class="loc-chip-name">산호사해변</div>
-          <div class="loc-chip-desc">탭해서 미션 시작</div>
-        </div>
-        <div class="loc-chip-badge" id="chipBadge2">🔒</div>
-      </div>
+  <!-- 지도 -->
+  <div class="map-wrap">
+    <div id="map"></div>
+    <div class="gps-overlay">
+      <div class="gps-dot" id="gpsDot"></div>
+      <span id="gpsText">GPS 위치 파악 중...</span>
     </div>
   </div>
 
-  <!-- 탭1: 항구 → 성당 -->
-  <div class="section" id="sec1">
-    <div class="map-wrap">
-      <div id="map1"></div>
-      <div class="gps-overlay">
-        <div class="gps-dot" id="gpsDot1"></div>
-        <span id="gpsText1">GPS 위치 파악 중...</span>
+  <!-- 하단 장소 패널 -->
+  <div class="loc-panel">
+    <div class="loc-chip" style="background:#e8f5e9; border-color:#4caf50; pointer-events:none;">
+      <div class="loc-chip-icon">⚓</div>
+      <div>
+        <div class="loc-chip-name">하우목동항</div>
+        <div class="loc-chip-desc">출발점</div>
       </div>
     </div>
-    <div class="loc-panel">
-      <div class="loc-chip" style="background:#e8f5e9; border-color:#4caf50;">
-        <div class="loc-chip-icon">⚓</div>
-        <div class="loc-chip-info">
-          <div class="loc-chip-name">하우목동항 (출발)</div>
-          <div class="loc-chip-desc">여기서 출발!</div>
-        </div>
+    <div class="loc-chip" id="chip0" onclick="openMission(0)">
+      <div class="loc-chip-icon">⛪</div>
+      <div>
+        <div class="loc-chip-name">우도성당</div>
+        <div class="loc-chip-desc">탭해서 미션!</div>
       </div>
-      <div class="loc-chip" onclick="openMission(0)">
-        <div class="loc-chip-icon">⛪</div>
-        <div class="loc-chip-info">
-          <div class="loc-chip-name">우도성당 (도착)</div>
-          <div class="loc-chip-desc">도보 약 20~30분</div>
-        </div>
-        <div class="loc-chip-badge" id="chipBadge0b">🔒</div>
-      </div>
+      <div class="loc-chip-badge" id="chipBadge0">🔒</div>
     </div>
-  </div>
-
-  <!-- 탭2: 성당 → 짜장맨 -->
-  <div class="section" id="sec2">
-    <div class="map-wrap">
-      <div id="map2"></div>
-      <div class="gps-overlay">
-        <div class="gps-dot" id="gpsDot2"></div>
-        <span id="gpsText2">GPS 위치 파악 중...</span>
+    <div class="loc-chip" id="chip1" onclick="openMission(1)">
+      <div class="loc-chip-icon">🍜</div>
+      <div>
+        <div class="loc-chip-name">우도짜장맨</div>
+        <div class="loc-chip-desc">탭해서 미션!</div>
       </div>
+      <div class="loc-chip-badge" id="chipBadge1">🔒</div>
     </div>
-    <div class="loc-panel">
-      <div class="loc-chip" style="background:#e8f5e9; border-color:#4caf50;">
-        <div class="loc-chip-icon">⛪</div>
-        <div class="loc-chip-info">
-          <div class="loc-chip-name">우도성당 (출발)</div>
-          <div class="loc-chip-desc">여기서 출발!</div>
-        </div>
+    <div class="loc-chip" id="chip2" onclick="openMission(2)">
+      <div class="loc-chip-icon">🏖️</div>
+      <div>
+        <div class="loc-chip-name">서빈백사</div>
+        <div class="loc-chip-desc">탭해서 미션!</div>
       </div>
-      <div class="loc-chip" onclick="openMission(1)">
-        <div class="loc-chip-icon">🍜</div>
-        <div class="loc-chip-info">
-          <div class="loc-chip-name">우도짜장맨 (도착)</div>
-          <div class="loc-chip-desc">도보 약 30~40분</div>
-        </div>
-        <div class="loc-chip-badge" id="chipBadge1b">🔒</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 탭3: 짜장맨 → 산호사 -->
-  <div class="section" id="sec3">
-    <div class="map-wrap">
-      <div id="map3"></div>
-      <div class="gps-overlay">
-        <div class="gps-dot" id="gpsDot3"></div>
-        <span id="gpsText3">GPS 위치 파악 중...</span>
-      </div>
-    </div>
-    <div class="loc-panel">
-      <div class="loc-chip" style="background:#e8f5e9; border-color:#4caf50;">
-        <div class="loc-chip-icon">🍜</div>
-        <div class="loc-chip-info">
-          <div class="loc-chip-name">우도짜장맨 (출발)</div>
-          <div class="loc-chip-desc">버스 또는 차량 이동</div>
-        </div>
-      </div>
-      <div class="loc-chip" onclick="openMission(2)">
-        <div class="loc-chip-icon">🏖️</div>
-        <div class="loc-chip-info">
-          <div class="loc-chip-name">산호사해변 (도착)</div>
-          <div class="loc-chip-desc">버스 약 10~15분</div>
-        </div>
-        <div class="loc-chip-badge" id="chipBadge2b">🔒</div>
-      </div>
+      <div class="loc-chip-badge" id="chipBadge2">🔒</div>
     </div>
   </div>
 </div>
@@ -632,12 +255,12 @@ body {
       </div>
       <div class="cap-star-item">
         <div class="cap-star-circle">🏖️</div>
-        <div class="cap-star-lbl">산호사</div>
+        <div class="cap-star-lbl">서빈백사</div>
       </div>
     </div>
     <div class="cap-msg">⭐⭐⭐ 별스탬프 3개 획득!<br>우도 탐험 미션 모두 완료! 🎉</div>
     <div class="cap-date" id="capDate"></div>
-    <div class="cap-church">🌊 우도 탐험대</div>
+    <div class="cap-church">🌊 우도 탐험대 · 서문성당</div>
   </div>
   <div class="cap-actions" id="capActions">
     <button class="save-btn" onclick="saveImage()">📸 이미지로 저장하기!</button>
@@ -648,254 +271,135 @@ body {
 <!-- 토스트 -->
 <div class="toast" id="toast"></div>
 
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
 // ══════════════════════════════════════
-//  데이터
+//  장소 데이터
 // ══════════════════════════════════════
 const LOCS = [
   {
-    id: 0, name: '우도성당', icon: '⛪', color: '#e53935',
-    lat: 33.5080, lng: 126.9558, radius: 180,
-    questions: [
-      { q: '송동림 신부님의 어릴적 별명은?',       a: '신부님' },
-      { q: '서문성당 복사단 인원은 몇 명인가요?',   a: '9명'  },
+    id:0, name:'우도성당', icon:'⛪', color:'#e53935',
+    lat:33.5080, lng:126.9558, radius:180,
+    questions:[
+      { q:'여성센터 부반장 이름은?',               a:'김도요' },
+      { q:'여성센터 태경언니 옆자리 수강생 이름은?', a:'김형희' },
     ]
   },
   {
-    id: 1, name: '우도짜장맨', icon: '🍜', color: '#e65100',
-    lat: 33.4977772, lng: 126.9676695, radius: 180,
-    questions: [
-      { q: '양솔 체칠리아가 좋아하는 운동은?',     a: '합기도' },
-      { q: '호현이가 음악센터에서 배우는 악기는?', a: '기타'   },
+    id:1, name:'우도짜장맨', icon:'🍜', color:'#e65100',
+    lat:33.4977772, lng:126.9676695, radius:180,
+    questions:[
+      { q:'여성센터 팀장님 이름은?',           a:'고정희' },
+      { q:'여성센터 두번째 반장 이름은?',      a:'강지애' },
     ]
   },
   {
-    id: 2, name: '산호사해변', icon: '🏖️', color: '#0277bd',
-    lat: 33.5030479, lng: 126.9433132, radius: 220,
-    questions: [
-      { q: '양솔 체칠리아 엄마의 이름과 세례명은?', a: '강지애 아녜스' },
+    id:2, name:'서빈백사(산호사해변)', icon:'🏖️', color:'#0277bd',
+    lat:33.5030479, lng:126.9433132, radius:220,
+    questions:[
+      { q:'우리 중에 제일 어린 사람은?', a:'강아롬' },
     ]
   }
 ];
 
-const HARBOR = { lat: 33.5103862, lng: 126.9432025 };
-
-// 경로 좌표 (해안도로 기반 waypoints)
-// 항구 → 우도성당: 북쪽 해안도로 따라 동쪽으로 도보
-const ROUTE_HARBOR_CHURCH = [
-  [33.5103862, 126.9432025],
-  [33.5108, 126.9455],
-  [33.5112, 126.9478],
-  [33.5110, 126.9503],
-  [33.5102, 126.9525],
-  [33.5093, 126.9540],
-  [33.5080, 126.9558],
-];
-
-// 우도성당 → 우도짜장맨: 동쪽 해안도로 따라 남쪽으로 도보
-const ROUTE_CHURCH_JJAJANG = [
-  [33.5080, 126.9558],
-  [33.5068, 126.9580],
-  [33.5052, 126.9610],
-  [33.5028, 126.9645],
-  [33.5005, 126.9668],
-  [33.4977772, 126.9676695],
-];
-
-// 짜장맨 → 산호사해변(서빈백사): 버스 이동, 남쪽 해안을 돌아 서쪽으로
-const ROUTE_JJAJANG_SANHO = [
-  [33.4977772, 126.9676695],
-  [33.4960, 126.9640],
-  [33.4940, 126.9580],
-  [33.4920, 126.9510],
-  [33.4918, 126.9450],
-  [33.4935, 126.9435],
-  [33.5030479, 126.9433132],
-];
+const HARBOR = { lat:33.5103862, lng:126.9432025 };
 
 // ══════════════════════════════════════
 //  상태
 // ══════════════════════════════════════
 let state = { name:'', stamps:[false,false,false], done:[false,false,false] };
-
-function loadState() {
-  try { const s = JSON.parse(localStorage.getItem('udoApp2')||'{}'); state = {...state,...s}; } catch(e){}
-}
-function saveState() { localStorage.setItem('udoApp2', JSON.stringify(state)); }
+function loadState() { try { const s=JSON.parse(localStorage.getItem('udoApp3')||'{}'); state={...state,...s}; } catch(e){} }
+function saveState() { localStorage.setItem('udoApp3', JSON.stringify(state)); }
 loadState();
 
-// ══════════════════════════════════════
-//  앱 시작
-// ══════════════════════════════════════
 if (state.name) initApp(state.name);
 
-document.getElementById('nameInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') startApp();
-});
+document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') startApp(); });
 
 function startApp() {
   const n = document.getElementById('nameInput').value.trim();
   if (!n) {
     const inp = document.getElementById('nameInput');
-    inp.style.borderColor = '#f44336';
-    inp.focus();
-    setTimeout(() => inp.style.borderColor = '#90caf9', 1500);
+    inp.style.borderColor='#f44336'; inp.focus();
+    setTimeout(()=>inp.style.borderColor='#90caf9',1500);
     return;
   }
-  state.name = n;
-  saveState();
-  initApp(n);
+  state.name=n; saveState(); initApp(n);
 }
 
 function initApp(name) {
-  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('startScreen').style.display='none';
   const app = document.getElementById('mainApp');
-  app.style.display = 'flex';
-  app.style.flexDirection = 'column';
-  app.style.height = '100vh';
-  document.getElementById('headerName').textContent = name;
-
+  app.style.display='flex'; app.style.flexDirection='column'; app.style.height='100vh';
+  document.getElementById('headerName').textContent=name;
   updateUI();
-  initMaps();
+  initMap();
   startGPS();
 }
 
 // ══════════════════════════════════════
-//  지도 초기화
+//  지도 (마커만, 경로 없음)
 // ══════════════════════════════════════
-const maps = [];
-const userMarkers = [];
-const gpsAlerted = [false, false, false];
-let userLat = null, userLng = null;
+let map, userMarker;
+const gpsAlerted = [false,false,false];
+let userLat=null, userLng=null;
 
-const TILE = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TILE_ATTR = '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>';
-
-function makeMarkerIcon(emoji, color) {
+function makeBigMarkerIcon(emoji, color, label) {
   return L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="position:relative;width:48px;height:56px;">
-      <div style="width:44px;height:44px;border-radius:50% 50% 50% 0;
-        transform:rotate(-45deg);background:${color};border:3px solid white;
-        box-shadow:0 3px 12px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;">
-        <span style="transform:rotate(45deg);font-size:22px;line-height:1;">${emoji}</span>
+    className:'',
+    html:`<div style="text-align:center;">
+      <div style="width:56px;height:56px;border-radius:50%;background:${color};
+        border:4px solid white;box-shadow:0 4px 16px rgba(0,0,0,.35);
+        display:flex;align-items:center;justify-content:center;
+        font-size:26px;margin:0 auto;">
+        ${emoji}
+      </div>
+      <div style="background:${color};color:white;font-size:11px;font-weight:900;
+        padding:3px 8px;border-radius:10px;margin-top:4px;white-space:nowrap;
+        box-shadow:0 2px 6px rgba(0,0,0,.25);">
+        ${label}
       </div>
     </div>`,
-    iconSize: [48, 56],
-    iconAnchor: [24, 52],
-    popupAnchor: [0, -54],
+    iconSize:[80,82], iconAnchor:[40,82], popupAnchor:[0,-84],
   });
 }
 
 function makeHarborIcon() {
   return L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="position:relative;width:48px;height:56px;">
-      <div style="width:44px;height:44px;border-radius:50% 50% 50% 0;
-        transform:rotate(-45deg);background:#546e7a;border:3px solid white;
-        box-shadow:0 3px 12px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;">
-        <span style="transform:rotate(45deg);font-size:22px;line-height:1;">⚓</span>
+    className:'',
+    html:`<div style="text-align:center;">
+      <div style="width:50px;height:50px;border-radius:50%;background:#455a64;
+        border:4px solid white;box-shadow:0 4px 16px rgba(0,0,0,.3);
+        display:flex;align-items:center;justify-content:center;
+        font-size:24px;margin:0 auto;">⚓</div>
+      <div style="background:#455a64;color:white;font-size:11px;font-weight:900;
+        padding:3px 8px;border-radius:10px;margin-top:4px;white-space:nowrap;
+        box-shadow:0 2px 6px rgba(0,0,0,.25);">
+        하우목동항
       </div>
     </div>`,
-    iconSize: [48, 56], iconAnchor: [24, 52],
+    iconSize:[80,76], iconAnchor:[40,76],
   });
 }
 
-function addRouteToMap(map, coords, color, dashed) {
-  const opts = { color, weight: 5, opacity: .85 };
-  if (dashed) opts.dashArray = '10, 8';
-  L.polyline(coords, opts).addTo(map);
-  // 방향 화살표 (중간 지점마다)
-  if (coords.length >= 2) {
-    for (let i = 0; i < coords.length - 1; i += 2) {
-      const from = coords[i], to = coords[Math.min(i+1, coords.length-1)];
-      const midLat = (from[0]+to[0])/2, midLng = (from[1]+to[1])/2;
-      const angle = Math.atan2(to[1]-from[1], to[0]-from[0]) * 180/Math.PI - 90;
-      L.marker([midLat, midLng], {
-        icon: L.divIcon({
-          className:'',
-          html:`<div style="transform:rotate(${angle}deg);font-size:16px;line-height:1;">▲</div>`,
-          iconSize:[20,20], iconAnchor:[10,10]
-        }),
-        interactive: false
-      }).addTo(map);
-    }
-  }
-}
+function initMap() {
+  map = L.map('map', { zoomControl:true, attributionControl:false, tap:false })
+         .setView([33.503, 126.955], 13);
 
-function initMaps() {
-  const mapConfigs = [
-    {
-      id: 'map0',
-      center: [33.506, 126.956],
-      zoom: 14,
-      markers: [
-        { ...HARBOR, icon: makeHarborIcon(), popup: '⚓ 하우목동항 (출발)' },
-        ...LOCS.map(l => ({ lat: l.lat, lng: l.lng, icon: makeMarkerIcon(l.icon, l.color), popup: l.name, missionIdx: l.id }))
-      ],
-      routes: [
-        { coords: ROUTE_HARBOR_CHURCH,  color: '#ff7043', dashed: false },
-        { coords: ROUTE_CHURCH_JJAJANG, color: '#ff7043', dashed: false },
-        { coords: ROUTE_JJAJANG_SANHO,  color: '#1976d2', dashed: true  },
-      ]
-    },
-    {
-      id: 'map1',
-      center: [33.5103, 126.9552],
-      zoom: 16,
-      markers: [
-        { ...HARBOR,            icon: makeHarborIcon(),                          popup: '⚓ 하우목동항 (출발)' },
-        { ...LOCS[0],           icon: makeMarkerIcon(LOCS[0].icon, LOCS[0].color), popup: '⛪ 우도성당 (도착)', missionIdx: 0 }
-      ],
-      routes: [{ coords: ROUTE_HARBOR_CHURCH, color: '#ff7043', dashed: false }]
-    },
-    {
-      id: 'map2',
-      center: [33.5064, 126.9598],
-      zoom: 16,
-      markers: [
-        { ...LOCS[0], icon: makeMarkerIcon(LOCS[0].icon, LOCS[0].color), popup: '⛪ 우도성당 (출발)' },
-        { ...LOCS[1], icon: makeMarkerIcon(LOCS[1].icon, LOCS[1].color), popup: '🍜 우도짜장맨 (도착)', missionIdx: 1 }
-      ],
-      routes: [{ coords: ROUTE_CHURCH_JJAJANG, color: '#ff7043', dashed: false }]
-    },
-    {
-      id: 'map3',
-      center: [33.5010, 126.9555],
-      zoom: 15,
-      markers: [
-        { ...LOCS[1], icon: makeMarkerIcon(LOCS[1].icon, LOCS[1].color), popup: '🍜 우도짜장맨 (출발)' },
-        { ...LOCS[2], icon: makeMarkerIcon(LOCS[2].icon, LOCS[2].color), popup: '🏖️ 산호사해변 (도착)', missionIdx: 2 }
-      ],
-      routes: [{ coords: ROUTE_JJAJANG_SANHO, color: '#1976d2', dashed: true }]
-    }
-  ];
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:19, attribution:'&copy; OpenStreetMap'
+  }).addTo(map);
+  L.control.attribution({ position:'bottomright', prefix:false }).addTo(map);
 
-  mapConfigs.forEach((cfg, idx) => {
-    const m = L.map(cfg.id, { zoomControl: true, attributionControl: false }).setView(cfg.center, cfg.zoom);
-    L.tileLayer(TILE, { attribution: TILE_ATTR, maxZoom: 19 }).addTo(m);
-    L.control.attribution({ position:'bottomright', prefix:false }).addTo(m);
+  // 출발점: 하우목동항
+  L.marker([HARBOR.lat, HARBOR.lng], { icon:makeHarborIcon() }).addTo(map);
 
-    // 경로 그리기
-    cfg.routes.forEach(r => addRouteToMap(m, r.coords, r.color, r.dashed));
-
-    // 마커 추가
-    cfg.markers.forEach(mk => {
-      const marker = L.marker([mk.lat, mk.lng], { icon: mk.icon }).addTo(m);
-      marker.bindPopup(`<b style="font-size:14px;">${mk.popup}</b>${mk.missionIdx !== undefined ? '<br><small style="color:#1976d2;">탭해서 미션 시작!</small>' : ''}`, { maxWidth:180 });
-      if (mk.missionIdx !== undefined) {
-        marker.on('click', () => openMission(mk.missionIdx));
-      } else {
-        marker.on('click', () => marker.openPopup());
-      }
-    });
-
-    // GPS 사용자 마커 placeholder
-    userMarkers.push(null);
-    maps.push(m);
+  // 미션 장소 마커
+  LOCS.forEach(loc => {
+    const m = L.marker([loc.lat, loc.lng], {
+      icon: makeBigMarkerIcon(loc.icon, loc.color, loc.name)
+    }).addTo(map);
+    m.on('click', () => openMission(loc.id));
   });
 }
 
@@ -903,91 +407,64 @@ function initMaps() {
 //  GPS
 // ══════════════════════════════════════
 function startGPS() {
-  if (!navigator.geolocation) {
-    setGPSText('GPS 미지원 — 마커를 탭해서 미션 시작!', false);
-    return;
-  }
+  if (!navigator.geolocation) { setGPSText('GPS 미지원 — 마커를 탭해서 미션 시작!', false); return; }
   setGPSText('GPS 위치 파악 중...', false);
-
   navigator.geolocation.watchPosition(pos => {
-    userLat = pos.coords.latitude;
-    userLng = pos.coords.longitude;
+    userLat=pos.coords.latitude; userLng=pos.coords.longitude;
     setGPSText('📍 내 위치 파악됨! 장소에 도착하면 미션이 열려요', true);
-    updateUserOnMaps();
+    updateUserOnMap();
     checkProximity();
   }, () => {
     setGPSText('GPS 연결 안됨 — 마커를 탭해서 미션 시작!', false);
-  }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 });
+  }, { enableHighAccuracy:true, timeout:15000, maximumAge:5000 });
 }
 
 function setGPSText(text, on) {
-  [0,1,2,3].forEach(i => {
-    const dot = document.getElementById('gpsDot'+i);
-    const txt = document.getElementById('gpsText'+i);
-    if (dot) dot.className = 'gps-dot' + (on ? ' on' : '');
-    if (txt) txt.textContent = text;
-  });
+  document.getElementById('gpsDot').className = 'gps-dot'+(on?' on':'');
+  document.getElementById('gpsText').textContent = text;
 }
 
-function updateUserOnMaps() {
-  if (!userLat) return;
+function updateUserOnMap() {
+  if (!userLat || !map) return;
   const icon = L.divIcon({
     className:'',
     html:`<div style="width:18px;height:18px;background:#2196f3;border-radius:50%;border:3px solid white;box-shadow:0 0 0 4px rgba(33,150,243,.25);"></div>`,
     iconSize:[18,18], iconAnchor:[9,9]
   });
-  maps.forEach((m, i) => {
-    if (userMarkers[i]) m.removeLayer(userMarkers[i]);
-    userMarkers[i] = L.marker([userLat, userLng], { icon, interactive:false, zIndexOffset:-100 }).addTo(m);
-  });
+  if (userMarker) map.removeLayer(userMarker);
+  userMarker = L.marker([userLat, userLng], { icon, interactive:false, zIndexOffset:-100 }).addTo(map);
 }
 
-function dist(lat1,lng1,lat2,lng2) {
-  const R=6371000, dL=(lat2-lat1)*Math.PI/180, dN=(lng2-lng1)*Math.PI/180;
-  return R*2*Math.atan2(Math.sqrt(Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dN/2)**2),Math.sqrt(1-(Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dN/2)**2)));
+function dist(a,b,c,d) {
+  const R=6371000,dL=(c-a)*Math.PI/180,dN=(d-b)*Math.PI/180;
+  return R*2*Math.atan2(Math.sqrt(Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dN/2)**2),Math.sqrt(1-(Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dN/2)**2)));
 }
 
 function checkProximity() {
-  LOCS.forEach((loc, i) => {
-    if (state.done[i] || gpsAlerted[i]) return;
-    if (dist(userLat, userLng, loc.lat, loc.lng) <= loc.radius) {
-      gpsAlerted[i] = true;
+  LOCS.forEach((loc,i)=>{
+    if(state.done[i]||gpsAlerted[i]) return;
+    if(dist(userLat,userLng,loc.lat,loc.lng)<=loc.radius){
+      gpsAlerted[i]=true;
       showToast(`${loc.icon} ${loc.name} 도착! 미션이 열렸어요!`);
-      setTimeout(() => openMission(i), 1600);
+      setTimeout(()=>openMission(i),1600);
     }
   });
-}
-
-// ══════════════════════════════════════
-//  탭
-// ══════════════════════════════════════
-function showTab(idx) {
-  document.querySelectorAll('.section').forEach((s,i) => s.classList.toggle('active', i===idx));
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
-  // 지도 크기 갱신 (탭 전환 시 필요)
-  setTimeout(() => { if(maps[idx]) maps[idx].invalidateSize(); }, 50);
 }
 
 // ══════════════════════════════════════
 //  UI 업데이트
 // ══════════════════════════════════════
 function updateUI() {
-  // 스탬프
-  state.stamps.forEach((earned, i) => {
-    const el = document.getElementById('stamp'+i);
-    if (el) el.classList.toggle('earned', earned);
+  state.stamps.forEach((earned,i)=>{
+    const el=document.getElementById('stamp'+i);
+    if(el) el.classList.toggle('earned',earned);
   });
-  document.getElementById('stampCount').textContent = state.stamps.filter(Boolean).length + '/3';
-
-  // 칩 배지
-  LOCS.forEach((loc, i) => {
-    ['chipBadge'+i, 'chipBadge'+i+'b'].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.textContent = state.done[i] ? '✅' : '🔒';
-    });
-    const chip = document.getElementById('chip'+i);
-    if (chip) chip.classList.toggle('done', state.done[i]);
+  document.getElementById('stampCount').textContent=state.stamps.filter(Boolean).length+'/3';
+  LOCS.forEach((_,i)=>{
+    const badge=document.getElementById('chipBadge'+i);
+    const chip=document.getElementById('chip'+i);
+    if(badge) badge.textContent=state.done[i]?'✅':'🔒';
+    if(chip)  chip.classList.toggle('done',state.done[i]);
   });
 }
 
@@ -995,11 +472,11 @@ function updateUI() {
 //  미션
 // ══════════════════════════════════════
 function openMission(idx) {
-  const loc = LOCS[idx];
-  const body = document.getElementById('modalBody');
+  const loc=LOCS[idx];
+  const body=document.getElementById('modalBody');
 
-  if (state.done[idx]) {
-    body.innerHTML = `
+  if(state.done[idx]){
+    body.innerHTML=`
       <div class="success-wrap">
         <span class="success-emoji">🎉</span>
         <div class="success-title">이미 완료!</div>
@@ -1011,7 +488,7 @@ function openMission(idx) {
     return;
   }
 
-  const qs = loc.questions.map((q,qi) => `
+  const qs=loc.questions.map((q,qi)=>`
     <div class="q-card">
       <div class="q-num">문제 ${qi+1}</div>
       <div class="q-text">${q.q}</div>
@@ -1019,7 +496,7 @@ function openMission(idx) {
       <div class="ans-fb" id="fb${idx}_${qi}"></div>
     </div>`).join('');
 
-  body.innerHTML = `
+  body.innerHTML=`
     <div class="modal-loc-tag">📍 ${loc.name} 미션</div>
     <div class="modal-title">${loc.icon} 미션을 수행해봐!</div>
     ${qs}
@@ -1030,115 +507,87 @@ function openMission(idx) {
 }
 
 function checkAnswers(idx) {
-  const loc = LOCS[idx];
-  let allOk = true;
-
-  loc.questions.forEach((q,qi) => {
-    const inp = document.getElementById(`a${idx}_${qi}`);
-    const fb  = document.getElementById(`fb${idx}_${qi}`);
-    const ok  = norm(inp.value) === norm(q.a);
-    inp.className = 'ans-input ' + (ok ? 'correct' : (inp.value.trim() ? 'wrong' : ''));
-    fb.className  = 'ans-fb '   + (ok ? 'correct' : 'wrong');
-    fb.textContent = ok ? '✅ 정답!' : (inp.value.trim() ? '❌ 다시 생각해봐!' : '');
-    if (!ok) allOk = false;
+  const loc=LOCS[idx];
+  let allOk=true;
+  loc.questions.forEach((q,qi)=>{
+    const inp=document.getElementById(`a${idx}_${qi}`);
+    const fb=document.getElementById(`fb${idx}_${qi}`);
+    const ok=norm(inp.value)===norm(q.a);
+    inp.className='ans-input '+(ok?'correct':(inp.value.trim()?'wrong':''));
+    fb.className='ans-fb '+(ok?'correct':'wrong');
+    fb.textContent=ok?'✅ 정답!':(inp.value.trim()?'❌ 다시 생각해봐!':'');
+    if(!ok) allOk=false;
   });
-
-  if (allOk) {
-    setTimeout(() => showSuccess(idx), 400);
-  } else {
-    const btn = document.querySelector('.submit-btn');
-    btn.style.animation = 'shake .4s';
-    setTimeout(() => btn.style.animation = '', 400);
+  if(allOk){ setTimeout(()=>showSuccess(idx),400); }
+  else {
+    const btn=document.querySelector('.submit-btn');
+    btn.style.animation='shake .4s';
+    setTimeout(()=>btn.style.animation='',400);
   }
 }
 
-function norm(s) { return s.trim().toLowerCase().replace(/\s+/g,''); }
+function norm(s){ return s.trim().toLowerCase().replace(/\s+/g,''); }
 
-function showSuccess(idx) {
-  const loc = LOCS[idx];
-  state.done[idx] = true;
-  state.stamps[idx] = true;
-  saveState();
-  updateUI();
-
-  const allDone = state.stamps.every(Boolean);
-  const body = document.getElementById('modalBody');
-
-  body.innerHTML = `
+function showSuccess(idx){
+  const loc=LOCS[idx];
+  state.done[idx]=true; state.stamps[idx]=true;
+  saveState(); updateUI();
+  const allDone=state.stamps.every(Boolean);
+  document.getElementById('modalBody').innerHTML=`
     <div class="success-wrap">
       <span class="success-emoji">🎊</span>
       <div class="success-title">미션 성공!</div>
       <div class="success-sub">${loc.icon} ${loc.name} 완료!<br>별스탬프를 획득했어요!</div>
       <span class="success-star">⭐</span>
-      ${allDone ? `
-        <div class="all-done-box">
-          🎉🎉🎉<br>
-          모든 미션 완료!<br>
-          ${state.name}(이)는 진정한<br>우도 탐험왕이에요! ⭐⭐⭐
-        </div>
+      ${allDone?`
+        <div class="all-done-box">🎉🎉🎉<br>모든 미션 완료!<br>${state.name}(이)는 진정한<br>우도 탐험왕이에요! ⭐⭐⭐</div>
         <button class="capture-trigger-btn" onclick="closeModal();openCaptureCard();">📸 완주 인증 저장하기!</button>
-      ` : ''}
+      `:''}
       <button class="success-close" onclick="closeModal()">지도로 돌아가기</button>
     </div>`;
 }
 
-function closeModal() {
-  document.getElementById('missionModal').classList.remove('open');
-}
-
-document.getElementById('missionModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
+function closeModal(){ document.getElementById('missionModal').classList.remove('open'); }
+document.getElementById('missionModal').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
 
 // ══════════════════════════════════════
-//  캡처 카드
+//  완주 캡처
 // ══════════════════════════════════════
-function openCaptureCard() {
-  const d = new Date();
-  document.getElementById('capName').textContent = state.name + ' 탐험가';
-  document.getElementById('capDate').textContent =
-    `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+function openCaptureCard(){
+  const d=new Date();
+  document.getElementById('capName').textContent=state.name+' 탐험가';
+  document.getElementById('capDate').textContent=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
   document.getElementById('captureCard').classList.add('open');
 }
-function closeCaptureCard() { document.getElementById('captureCard').classList.remove('open'); }
+function closeCaptureCard(){ document.getElementById('captureCard').classList.remove('open'); }
 
-function saveImage() {
-  const target  = document.getElementById('captureTarget');
-  const actions = document.getElementById('capActions');
-  actions.style.display = 'none';
-
-  html2canvas(target, { scale:3, useCORS:true, backgroundColor:null, logging:false })
-    .then(canvas => {
-      actions.style.display = 'flex';
-      const fileName = `우도탐험_${state.name}_완주인증.png`;
-      canvas.toBlob(blob => {
-        if (navigator.share && navigator.canShare &&
-            navigator.canShare({ files:[new File([blob], fileName, {type:'image/png'})] })) {
-          navigator.share({
-            title:'우도 탐험 완주 인증!',
-            text:`${state.name}의 우도 탐험 완주 인증 🎉`,
-            files:[new File([blob], fileName, {type:'image/png'})]
-          }).catch(() => dlFallback(canvas, fileName));
-        } else {
-          dlFallback(canvas, fileName);
-        }
-      }, 'image/png');
-    });
+function saveImage(){
+  const target=document.getElementById('captureTarget');
+  const actions=document.getElementById('capActions');
+  actions.style.display='none';
+  html2canvas(target,{scale:3,useCORS:true,backgroundColor:null,logging:false}).then(canvas=>{
+    actions.style.display='flex';
+    const fileName=`우도탐험_${state.name}_완주인증.png`;
+    canvas.toBlob(blob=>{
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File([blob],fileName,{type:'image/png'})]})){
+        navigator.share({title:'우도 탐험 완주 인증!',text:`${state.name}의 우도 탐험 완주 인증 🎉`,files:[new File([blob],fileName,{type:'image/png'})]})
+          .catch(()=>dlFallback(canvas,fileName));
+      } else { dlFallback(canvas,fileName); }
+    },'image/png');
+  });
 }
-
-function dlFallback(canvas, name) {
-  const a = document.createElement('a');
-  a.download = name; a.href = canvas.toDataURL('image/png'); a.click();
+function dlFallback(canvas,name){
+  const a=document.createElement('a'); a.download=name; a.href=canvas.toDataURL('image/png'); a.click();
   showToast('📸 이미지가 저장됐어요!');
 }
 
 // ══════════════════════════════════════
 //  토스트
 // ══════════════════════════════════════
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3500);
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
 }
 </script>
 </body>
