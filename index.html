@@ -135,7 +135,8 @@ body { font-family: 'Noto Sans KR', -apple-system, sans-serif; background:#e8f4f
 .next-guide-box { background:linear-gradient(135deg,#e3f2fd,#e8f5e9); border-radius:16px; padding:14px 16px; margin-bottom:16px; font-size:15px; font-weight:700; color:#1a237e; line-height:1.8; border:2px solid #90caf9; }
 .all-done-box  { background:linear-gradient(135deg,#fff9c4,#fff3e0); border-radius:16px; padding:16px; margin-bottom:16px; font-size:16px; font-weight:700; color:#7a5500; line-height:1.8; border:2px solid #ffd700; }
 .capture-trigger-btn { width:100%; padding:16px; margin-bottom:10px; background:linear-gradient(135deg,#ffd700,#ffb300); color:#7a5500; border:none; border-radius:16px; font-size:17px; font-weight:900; cursor:pointer; box-shadow:0 4px 14px rgba(255,193,7,.4); font-family:inherit; }
-.success-close { width:100%; padding:13px; background:#f5f5f5; color:#777; border:none; border-radius:16px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; }
+.success-close { width:100%; padding:15px; background:linear-gradient(135deg,#43a047,#66bb6a); color:white; border:none; border-radius:16px; font-size:17px; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(67,160,71,.4); animation:successClosePulse 1.5s ease-in-out infinite; }
+@keyframes successClosePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
 
 /* 완주 캡처 카드 */
 #captureCard { display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:600; align-items:center; justify-content:center; padding:20px; flex-direction:column; gap:14px; }
@@ -588,7 +589,7 @@ function showSuccess(idx){
         <div class="all-done-box">🎉🎉🎉<br><b>모든 미션 완료!</b><br>${state.name}(이)는 진정한<br>우도 탐험왕이에요! ⭐⭐⭐</div>
         <button class="capture-trigger-btn" onclick="closeModal();openCaptureCard();">📸 완주 인증 저장하기!</button>
       `:nextBox}
-      <button class="success-close" onclick="closeModal()">지도로 돌아가기</button>
+      <button class="success-close" onclick="closeModal()">🗺️ 지도로 돌아가기!</button>
     </div>`;
 }
 
