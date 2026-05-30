@@ -157,7 +157,20 @@ body { font-family: 'Noto Sans KR', -apple-system, sans-serif; background:#e8f4f
 .cap-actions { display:flex; flex-direction:column; gap:10px; width:100%; max-width:300px; }
 .save-btn    { padding:15px; background:linear-gradient(135deg,#ffd700,#ffb300); color:#7a5500; border:none; border-radius:16px; font-size:16px; font-weight:900; cursor:pointer; box-shadow:0 4px 14px rgba(255,193,7,.4); font-family:inherit; }
 .save-btn:active { transform:scale(.97); }
+.exit-btn    { padding:14px; background:linear-gradient(135deg,#e53935,#ef5350); color:white; border:none; border-radius:16px; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(229,57,53,.4); }
 .close-cap-btn { padding:13px; background:rgba(255,255,255,.15); color:white; border:1.5px solid rgba(255,255,255,.3); border-radius:16px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
+
+/* 종료 완료 화면 */
+#byeScreen { display:none; position:fixed; inset:0; z-index:900;
+  background:linear-gradient(160deg,#0d47a1 0%,#1976d2 45%,#42a5f5 100%);
+  flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+#byeScreen.open { display:flex; animation:fadeIn .4s; }
+.bye-card { background:white; border-radius:32px; padding:32px 24px; width:100%; max-width:340px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+.bye-hero  { width:100%; max-width:200px; display:block; margin:0 auto 14px; border-radius:12px; }
+.bye-title { font-size:26px; font-weight:900; color:#0d47a1; margin-bottom:6px; }
+.bye-msg   { font-size:14px; color:#888; margin-bottom:6px; font-weight:600; }
+.bye-name  { font-size:18px; font-weight:900; color:#1976d2; margin-bottom:20px; }
+.bye-restart { width:100%; padding:16px; background:linear-gradient(135deg,#1976d2,#42a5f5); color:white; border:none; border-radius:16px; font-size:18px; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 6px 20px rgba(25,118,210,.4); }
 
 /* 토스트 */
 .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:#1a237e; color:white; padding:12px 22px; border-radius:28px; font-size:14px; font-weight:700; z-index:700; box-shadow:0 4px 18px rgba(0,0,0,.3); transition:transform .4s cubic-bezier(.34,1.56,.64,1); pointer-events:none; white-space:nowrap; }
@@ -320,7 +333,21 @@ body { font-family: 'Noto Sans KR', -apple-system, sans-serif; background:#e8f4f
   </div>
   <div class="cap-actions" id="capActions">
     <button class="save-btn" onclick="saveImage()">📸 이미지로 저장하기!</button>
-    <button class="close-cap-btn" onclick="closeCaptureCard()">닫기</button>
+    <button class="exit-btn" onclick="showByeScreen()">🚪 탐험 종료하기</button>
+    <button class="close-cap-btn" onclick="closeCaptureCard()">계속 탐험할게요</button>
+  </div>
+</div>
+
+<!-- 종료 완료 화면 -->
+<div id="byeScreen">
+  <div class="bye-card">
+    <img class="bye-hero" src="hero.png" alt="우도 탐험대"
+         onerror="this.style.display='none'">
+    <div class="bye-title">우도 탐험 완료!!! 🎉</div>
+    <div class="bye-msg">수고했어요!</div>
+    <div class="bye-name" id="byeName"></div>
+    <div class="bye-msg" style="margin-bottom:20px;" id="byeStampMsg"></div>
+    <button class="bye-restart" onclick="doReset()">🔄 처음부터 다시 시작!</button>
   </div>
 </div>
 
@@ -714,6 +741,21 @@ function doReset() {
 function doExit() {
   closeConfirm();
   openExitCard();
+}
+
+function showByeScreen() {
+  document.getElementById('captureCard').classList.remove('open');
+  const count = state.stamps.filter(Boolean).length;
+  const stampMsgs = [
+    '아직 미션이 남아있어요! 다음엔 꼭 완주해봐요! 💪',
+    '⭐ 별 1개 획득! 다음엔 더 도전해봐요!',
+    '⭐⭐ 별 2개 획득! 거의 다 왔었는데~ 아쉽다!',
+    '⭐⭐⭐ 별 3개 모두 획득! 진정한 우도 탐험왕! 🏆',
+  ];
+  document.getElementById('byeName').textContent = state.name + ' 탐험가!';
+  document.getElementById('byeStampMsg').textContent = stampMsgs[count];
+  document.getElementById('byeScreen').classList.add('open');
+  launchConfetti();
 }
 
 function openExitCard() {
