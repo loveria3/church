@@ -68,7 +68,10 @@ body { font-family: 'Noto Sans KR', -apple-system, sans-serif; background:#e8f4f
 .header { background:linear-gradient(135deg,#0d47a1,#1976d2); padding:10px 14px 8px; flex-shrink:0; box-shadow:0 3px 12px rgba(0,0,0,.25); z-index:100; }
 .header-row1 { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
 .header-title { font-size:17px; font-weight:900; color:white; }
-.header-name  { font-size:13px; color:rgba(255,255,255,.85); font-weight:700; }
+.header-name  { font-size:13px; color:rgba(255,255,255,.85); font-weight:700; flex:1; text-align:center; }
+.header-btns  { display:flex; gap:6px; }
+.hdr-btn { background:rgba(255,255,255,.18); border:none; border-radius:10px; color:white; font-size:12px; font-weight:800; padding:5px 10px; cursor:pointer; font-family:inherit; }
+.hdr-btn:active { transform:scale(.95); }
 .stamps-bar  { background:rgba(255,255,255,.15); border-radius:12px; padding:7px 12px; display:flex; align-items:center; gap:10px; }
 .stamp-label { font-size:12px; color:rgba(255,255,255,.85); font-weight:700; flex-shrink:0; }
 .stamps-list { display:flex; gap:12px; flex:1; }
@@ -161,6 +164,16 @@ body { font-family: 'Noto Sans KR', -apple-system, sans-serif; background:#e8f4f
 @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
 @keyframes markerPulse { 0%{transform:scale(1);filter:brightness(1)} 50%{transform:scale(1.18);filter:brightness(1.3)} 100%{transform:scale(1);filter:brightness(1)} }
 @keyframes markerRing  { 0%,100%{opacity:.7;transform:scale(1)} 50%{opacity:0;transform:scale(1.6)} }
+
+/* 확인 다이얼로그 */
+#confirmDialog { display:none; position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:800; align-items:center; justify-content:center; padding:24px; backdrop-filter:blur(4px); }
+#confirmDialog.open { display:flex; animation:fadeIn .2s; }
+.confirm-card { background:white; border-radius:24px; padding:24px 20px; width:100%; max-width:320px; text-align:center; }
+.confirm-title { font-size:20px; font-weight:900; color:#1a237e; margin-bottom:8px; }
+.confirm-sub   { font-size:14px; color:#666; margin-bottom:20px; line-height:1.6; }
+.confirm-btns  { display:flex; flex-direction:column; gap:10px; }
+.confirm-yes   { padding:14px; background:linear-gradient(135deg,#e53935,#ef5350); color:white; border:none; border-radius:14px; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; }
+.confirm-no    { padding:13px; background:#f5f5f5; color:#666; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; }
 </style>
 </head>
 <body>
@@ -213,6 +226,10 @@ body { font-family: 'Noto Sans KR', -apple-system, sans-serif; background:#e8f4f
     <div class="header-row1">
       <div class="header-title">🌊 우도 탐험대</div>
       <div class="header-name" id="headerName"></div>
+      <div class="header-btns">
+        <button class="hdr-btn" onclick="confirmReset()">🔄 처음</button>
+        <button class="hdr-btn" onclick="confirmExit()">🚪 종료</button>
+      </div>
     </div>
     <div class="stamps-bar">
       <span class="stamp-label">⭐ 스탬프</span>
@@ -263,25 +280,38 @@ body { font-family: 'Noto Sans KR', -apple-system, sans-serif; background:#e8f4f
     <div class="cap-name" id="capName"></div>
     <div class="cap-stars">
       <div class="cap-star-item">
-        <div class="cap-star-circle">⛪</div>
+        <div class="cap-star-circle" id="capStar0">⛪</div>
         <div class="cap-star-lbl">우도성당</div>
       </div>
       <div class="cap-star-item">
-        <div class="cap-star-circle">🍜</div>
+        <div class="cap-star-circle" id="capStar1">🍜</div>
         <div class="cap-star-lbl">짜장맨</div>
       </div>
       <div class="cap-star-item">
-        <div class="cap-star-circle">🏖️</div>
+        <div class="cap-star-circle" id="capStar2">🏖️</div>
         <div class="cap-star-lbl">산호해수욕장</div>
       </div>
     </div>
-    <div class="cap-msg">⭐⭐⭐ 별스탬프 3개 획득!<br>우도 탐험 미션 모두 완료! 🎉</div>
+    <div class="cap-msg" id="capMsg">⭐⭐⭐ 별스탬프 3개 획득!</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.75);font-weight:600;margin-bottom:12px;" id="capSubMsg">우도 탐험 미션 모두 완료! 🎉</div>
     <div class="cap-date" id="capDate"></div>
     <div class="cap-church">🌊 우도 탐험대 · 서문성당</div>
   </div>
   <div class="cap-actions" id="capActions">
     <button class="save-btn" onclick="saveImage()">📸 이미지로 저장하기!</button>
     <button class="close-cap-btn" onclick="closeCaptureCard()">닫기</button>
+  </div>
+</div>
+
+<!-- 확인 다이얼로그 -->
+<div id="confirmDialog">
+  <div class="confirm-card">
+    <div class="confirm-title" id="confirmTitle">처음으로 돌아가기</div>
+    <div class="confirm-sub" id="confirmSub">지금까지의 진행이 모두 초기화돼요.<br>정말 처음부터 다시 할까요?</div>
+    <div class="confirm-btns">
+      <button class="confirm-yes" id="confirmYesBtn" onclick="">예, 할게요</button>
+      <button class="confirm-no" onclick="closeConfirm()">아니요, 계속할게요</button>
+    </div>
   </div>
 </div>
 
@@ -321,8 +351,8 @@ const LOCS = [
 const HARBOR = { lat:33.5103862, lng:126.9432025 };
 
 let state = { name:'', stamps:[false,false,false], done:[false,false,false] };
-function loadState() { try { const s=JSON.parse(localStorage.getItem('udoApp4')||'{}'); state={...state,...s}; } catch(e){} }
-function saveState() { localStorage.setItem('udoApp4', JSON.stringify(state)); }
+function loadState() { try { const s=JSON.parse(localStorage.getItem('udoApp5')||'{}'); state={...state,...s}; } catch(e){} }
+function saveState() { localStorage.setItem('udoApp5', JSON.stringify(state)); }
 loadState();
 
 if (state.name) initApp(state.name);
@@ -565,12 +595,7 @@ function showSuccess(idx){
 function closeModal(){ document.getElementById('missionModal').classList.remove('open'); }
 document.getElementById('missionModal').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
 
-function openCaptureCard(){
-  const d=new Date();
-  document.getElementById('capName').textContent=state.name+' 탐험가';
-  document.getElementById('capDate').textContent=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
-  document.getElementById('captureCard').classList.add('open');
-}
+function openCaptureCard(){ openExitCard(); }
 function closeCaptureCard(){ document.getElementById('captureCard').classList.remove('open'); }
 
 function saveImage(){
@@ -592,6 +617,65 @@ function saveImage(){
 function dlFallback(canvas,name){
   const a=document.createElement('a'); a.download=name; a.href=canvas.toDataURL('image/png'); a.click();
   showToast('📸 이미지가 저장됐어요!');
+}
+
+// ── 처음으로 / 종료 ──
+function confirmReset() {
+  document.getElementById('confirmTitle').textContent = '🔄 처음으로 돌아가기';
+  document.getElementById('confirmSub').textContent = '지금까지 모은 스탬프가 모두 초기화돼요.\n정말 처음부터 다시 할까요?';
+  document.getElementById('confirmSub').style.whiteSpace = 'pre-line';
+  document.getElementById('confirmYesBtn').textContent = '예, 처음부터 할게요';
+  document.getElementById('confirmYesBtn').onclick = doReset;
+  document.getElementById('confirmYesBtn').style.background = 'linear-gradient(135deg,#e53935,#ef5350)';
+  document.getElementById('confirmDialog').classList.add('open');
+}
+
+function confirmExit() {
+  document.getElementById('confirmTitle').textContent = '🚪 탐험 종료하기';
+  document.getElementById('confirmSub').textContent = '종료하면 지금까지 모은 스탬프 화면을 보여드려요!';
+  document.getElementById('confirmSub').style.whiteSpace = 'normal';
+  document.getElementById('confirmYesBtn').textContent = '종료하고 스탬프 보기 📸';
+  document.getElementById('confirmYesBtn').onclick = doExit;
+  document.getElementById('confirmYesBtn').style.background = 'linear-gradient(135deg,#1976d2,#42a5f5)';
+  document.getElementById('confirmDialog').classList.add('open');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmDialog').classList.remove('open');
+}
+
+function doReset() {
+  closeConfirm();
+  localStorage.removeItem('udoApp5');
+  location.reload();
+}
+
+function doExit() {
+  closeConfirm();
+  openExitCard();
+}
+
+function openExitCard() {
+  const d = new Date();
+  const count = state.stamps.filter(Boolean).length;
+  document.getElementById('capName').textContent = state.name + ' 탐험가';
+  document.getElementById('capDate').textContent = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+
+  // 스탬프 상태에 따라 캡처 카드 메시지 업데이트
+  const msgs = ['', '⭐ 별스탬프 1개 획득!', '⭐⭐ 별스탬프 2개 획득!', '⭐⭐⭐ 별스탬프 3개 획득!'];
+  const subMsgs = ['아직 미션을 시작하지 않았어요.\n다음에 또 도전해봐요! 💪', '잘했어요! 다음 장소로 이동해봐요! 🚶', '거의 다 왔어요! 마지막 미션 화이팅! 🔥', '우도 탐험 미션 모두 완료! 🎉'];
+  document.getElementById('capMsg').textContent = msgs[count];
+  document.getElementById('capSubMsg').textContent = subMsgs[count];
+
+  // 스탬프 원 색상 업데이트
+  ['capStar0','capStar1','capStar2'].forEach((id,i)=>{
+    const el = document.getElementById(id);
+    if(el) el.style.background = state.stamps[i]
+      ? 'linear-gradient(135deg,#ffd700,#ffb300)'
+      : 'rgba(255,255,255,.2)';
+  });
+
+  document.getElementById('captureCard').classList.add('open');
 }
 
 function showToast(msg){
